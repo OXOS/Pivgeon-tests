@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if rvm list strings | grep 1.9.2 ; then
+	rvm	1.9.2
+else
+  echo "Ruby 1.9.2 was not found, please run 'rvm install 1.9.2'"
+fi
