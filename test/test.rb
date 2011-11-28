@@ -6,9 +6,12 @@ describe 'A user' do
   EMAIL1    = ENV['EMAIL1']
   PASSWORD1 = ENV['PASS1']
 
-  # Use email that no Pivgeon account is created for
+  # Use another email that you created Pivgeon account for
   EMAIL2    = ENV['EMAIL2']
-  PASSWORD2 = ENV['PASS2']
+
+  # Use email that no Pivgeon account is created for
+  EMAIL3    = ENV['EMAIL3']
+  PASSWORD3 = ENV['PASS3']
 
   PROJECT_NAME             = ENV['PROJECT1'] || "test"
   PROJECT_NAME_WITH_SPACES = ENV['PROJECT2'] || "test project"
@@ -16,12 +19,12 @@ describe 'A user' do
   describe "An unregistered user" do
    	   
     before do
-      init_mailer(EMAIL2,PASSWORD2) 
+      init_mailer(EMAIL3,PASSWORD3) 
     end
       
     it "is not able to crate new story" do
-      send_email(EMAIL2,EMAIL2,"#{PROJECT_NAME}@pivgeon.com","Unregistered user creates new story 1","Body")
-      assert_email_received( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL2], :subject => "Re: Unregistered user creates new story 1" ) do |body_text|
+      send_email(EMAIL3,EMAIL3,"#{PROJECT_NAME}@pivgeon.com","Unregistered user creates new story 1","Body")
+      assert_email_received( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL3], :subject => "Re: Unregistered user creates new story 1" ) do |body_text|
         assert body_text =~ /You tried to create new story. Unfortunatelly the story hasn't been created due to following errors/
         assert body_text =~ /Unauthorized access/
       end
@@ -35,14 +38,21 @@ describe 'A user' do
       init_mailer(EMAIL1,PASSWORD1) 
     end
 
-    it "creates new story" do
+    it "creates new story owned by him" do
       send_email(EMAIL1,EMAIL1,"#{PROJECT_NAME}@pivgeon.com","Add new feature","Some more detailed explanation")
       assert_email_received( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add new feature") do |body_text|
         assert body_text =~ /You have created new story .+Add new feature.+/
       end
     end
 
-    it "creates new story for project with two-part name" do
+    it "creates new story owned by other user" do
+      send_email(EMAIL1,EMAIL2,"#{PROJECT_NAME}@pivgeon.com","Implement new feature","Some more detailed explanation")
+      assert_email_received( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Implement new feature") do |body_text|
+        assert body_text =~ /You have created new story .+Implement new feature.+/
+      end
+    end
+
+    it "creates new story for project with name with spaces" do
       project_name = PROJECT_NAME_WITH_SPACES.split(' ').join
       send_email(EMAIL1,EMAIL1,"#{project_name}@pivgeon.com","Fix the bug","Some more detailed explanation")
       assert_email_received(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Fix the bug") do |body_text|
@@ -53,7 +63,7 @@ describe 'A user' do
     describe "is not able to create new story" do
       
       it "due to not existing member" do
-        send_email(EMAIL1,EMAIL2,"#{PROJECT_NAME}@pivgeon.com","Add second feature","Some more detailed explanation")
+        send_email(EMAIL1,EMAIL3,"#{PROJECT_NAME}@pivgeon.com","Add second feature","Some more detailed explanation")
         assert_email_received(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add second feature") do |body_text|
           assert body_text =~ /A person that you try to assign to the story is not a project member/
         end
