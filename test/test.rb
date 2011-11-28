@@ -52,7 +52,7 @@ describe 'A user' do
       end
     end
 
-    it "creates new story for project with name with space" do
+    it "creates new story for project with space" do
       project_name = PROJECT_NAME_WITH_SPACES.split(' ').join
       send_email(EMAIL1,EMAIL1,"#{project_name}@pivgeon.com","Fix the bug","Some more detailed explanation")
       wait_for_email(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Fix the bug") do |body_text|
