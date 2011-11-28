@@ -1,17 +1,19 @@
 module TestHelper
   def init_mailer(login,password)
-    smtp_conn = Net::SMTP.new('smtp.gmail.com', 587)
-    smtp_conn.enable_starttls           
-    smtp_conn.start('smtp.gmail.com', login, password, :plain)
-
     Mail.defaults do
-      delivery_method  :smtp_connection, { :connection => smtp_conn }  
+      delivery_method :smtp, { :address              => "smtp.gmail.com",
+                               :port                 => 587,
+                               :domain               => 'gmail.com',
+                               :user_name            => login,
+                               :password             => password,
+                               :authentication       => 'plain',
+                               :enable_starttls_auto => true }  
       retriever_method :imap, 
-                        :address    => 'imap.gmail.com',
-                        :port       => 993,
-                        :user_name  => login,
-                        :password   => password,
-                        :enable_ssl => true 
+                       :address    => 'imap.gmail.com',
+                       :port       => 993,
+                       :user_name  => login,
+                       :password   => password,
+                       :enable_ssl => true 
     end
   end
 
@@ -26,29 +28,34 @@ module TestHelper
     mail.deliver!
   end
 
-  def assert_email_received(options, &block)
+  def wait_for_email(options, &block)
     start_time = Time.now
     wait_time = (ENV['EMAIL_WAIT_TIME'] || 60).to_i
     mail = nil
 
     begin
-      mail = Mail.last
-      success = true
-
-      options.each_pair do |k,v|
-        success = false if !v.blank? && v != mail.send(k)
-      end
-
-      raise "not found" unless success
+      mail = find_email(options)
+      raise "not found" unless mail
     rescue
       assert(false, "Email should be received.") if (Time.now - start_time) >= wait_time
-      sleep 3
+      sleep 5
       retry
     end
 
     if block
       block.call(mail.body)
     end
-  end         
+  end
+
+  protected
+
+  def find_email(options)
+    mail = Mail.last
+    result = true
+    options.each_pair do |k,v|
+      result = false if !v.blank? && v != mail.send(k)
+    end
+    result ? mail : false
+  end
 
 end

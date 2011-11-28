@@ -24,7 +24,7 @@ describe 'A user' do
       
     it "is not able to crate new story" do
       send_email(EMAIL3,EMAIL3,"#{PROJECT_NAME}@pivgeon.com","Unregistered user creates new story 1","Body")
-      assert_email_received( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL3], :subject => "Re: Unregistered user creates new story 1" ) do |body_text|
+      wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL3], :subject => "Re: Unregistered user creates new story 1" ) do |body_text|
         assert body_text =~ /You tried to create new story. Unfortunatelly the story hasn't been created due to following errors/
         assert body_text =~ /Unauthorized access/
       end
@@ -40,14 +40,14 @@ describe 'A user' do
 
     it "creates new story owned by him" do
       send_email(EMAIL1,EMAIL1,"#{PROJECT_NAME}@pivgeon.com","Add new feature","Some more detailed explanation")
-      assert_email_received( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add new feature") do |body_text|
+      wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add new feature") do |body_text|
         assert body_text =~ /You have created new story .+Add new feature.+/
       end
     end
 
     it "creates new story owned by other user" do
       send_email(EMAIL1,EMAIL2,"#{PROJECT_NAME}@pivgeon.com","Implement new feature","Some more detailed explanation")
-      assert_email_received( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Implement new feature") do |body_text|
+      wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Implement new feature") do |body_text|
         assert body_text =~ /You have created new story .+Implement new feature.+/
       end
     end
@@ -55,7 +55,7 @@ describe 'A user' do
     it "creates new story for project with name with space" do
       project_name = PROJECT_NAME_WITH_SPACES.split(' ').join
       send_email(EMAIL1,EMAIL1,"#{project_name}@pivgeon.com","Fix the bug","Some more detailed explanation")
-      assert_email_received(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Fix the bug") do |body_text|
+      wait_for_email(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Fix the bug") do |body_text|
         assert body_text =~ /You have created new story .+Fix the bug+/
       end
     end
@@ -64,14 +64,14 @@ describe 'A user' do
       
       it "due to not existing member" do
         send_email(EMAIL1,EMAIL3,"#{PROJECT_NAME}@pivgeon.com","Add second feature","Some more detailed explanation")
-        assert_email_received(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add second feature") do |body_text|
+        wait_for_email(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add second feature") do |body_text|
           assert body_text =~ /A person that you try to assign to the story is not a project member/
         end
       end
       
       it "due to not existing project" do
         send_email(EMAIL1,EMAIL1,"ertyuasdafa@pivgeon.com","Add third feature","Some more detailed explanation")
-        assert_email_received(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add third feature") do |body_text|
+        wait_for_email(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add third feature") do |body_text|
           assert body_text =~ /Project 'ertyuasdafa' that you try to create this story for does not exist/
         end
       end
