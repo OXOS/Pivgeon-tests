@@ -16,6 +16,8 @@ describe 'A user' do
   PROJECT_NAME             = ENV['PROJECT1'] || "test"
   PROJECT_NAME_WITH_SPACES = ENV['PROJECT2'] || "test project"
 
+  TOKEN = ENV['TOKEN']
+
   describe "An unregistered user" do
    	   
     before do
@@ -29,13 +31,61 @@ describe 'A user' do
         assert body_text =~ /Unauthorized access/
       end
     end
+
+    it "creates new Pivgeon account" do
+      email = "pivgeon_test_user_#{Time.now.hash}#{rand 10000}@example.com"
+
+      visit "http://devel.pivgeon.com/users/new"
+
+      fill_in "Email", :with => email
+      fill_in "Pivotal token", :with => TOKEN
+      click_button "Create"
+
+      assert has_content?("Congratulations, your account has been created.")
+    end
+
+    describe "can't create new pivgeon account" do
+
+      before do
+        visit "http://devel.pivgeon.com/users/new"
+      end
+
+      it "due to mising data" do        
+        fill_in "Email", :with => ""
+        fill_in "Pivotal token", :with => ""
+        
+        click_button "Create"
+
+        assert has_css?("div.formError", :text => "Email can't be blank")
+        assert has_css?("div.formError", :text => "Token can't be blank")
+      end
+
+      it "due to taken email" do
+        fill_in "Email", :with => EMAIL1
+        fill_in "Pivotal token", :with => TOKEN
+
+        click_button "Create"
+
+        assert has_css?("div.formError", :text => "Email address is already taken")
+      end
+
+      it "due to invalid token" do
+        fill_in "Email", :with => "someemail@example.com"
+        fill_in "Pivotal token", :with => "invalidtoken"
+
+        click_button "Create"
+
+        assert has_css?("div.formError", :text => "Token is invalid")
+      end
+
+    end
       
   end
 
   describe "A registered user" do
-  
+
     before do
-      init_mailer(EMAIL1,PASSWORD1) 
+      init_mailer(EMAIL1,PASSWORD1)
     end
 
     it "creates new story owned by him" do
@@ -61,21 +111,21 @@ describe 'A user' do
     end
 
     describe "is not able to create new story" do
-      
+
       it "due to not existing member" do
         send_email(EMAIL1,EMAIL3,"#{PROJECT_NAME}@pivgeon.com","Add second feature","Some more detailed explanation")
         wait_for_email(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add second feature") do |body_text|
           assert body_text =~ /A person that you try to assign to the story is not a project member/
         end
       end
-      
+
       it "due to not existing project" do
         send_email(EMAIL1,EMAIL1,"ertyuasdafa@pivgeon.com","Add third feature","Some more detailed explanation")
         wait_for_email(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add third feature") do |body_text|
           assert body_text =~ /Project 'ertyuasdafa' that you try to create this story for does not exist/
         end
       end
-      
+
     end
 
   end
