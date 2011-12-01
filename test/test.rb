@@ -35,7 +35,7 @@ describe 'A user' do
     it "creates new Pivgeon account" do
       email = "pivgeon_test_user_#{Time.now.hash}#{rand 10000}@example.com"
 
-      visit "http://devel.pivgeon.com/users/new"
+      visit "http://pivgeon.com/users/new"
 
       fill_in "Email", :with => email
       fill_in "Pivotal token", :with => TOKEN
@@ -47,7 +47,7 @@ describe 'A user' do
     describe "can't create new pivgeon account" do
 
       before do
-        visit "http://devel.pivgeon.com/users/new"
+        visit "http://pivgeon.com/users/new"
       end
 
       it "due to mising data" do        
