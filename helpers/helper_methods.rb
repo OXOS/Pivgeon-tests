@@ -1,20 +1,20 @@
 module TestHelper
   def init_mailer(login,password)
-    Mail.defaults do
-      delivery_method :smtp, { :address              => "smtp.gmail.com",
-                               :port                 => 587,
-                               :domain               => 'gmail.com',
-                               :user_name            => login,
-                               :password             => password,
-                               :authentication       => 'plain',
-                               :enable_starttls_auto => true }  
-      retriever_method :imap, 
-                       :address    => 'imap.gmail.com',
-                       :port       => 993,
-                       :user_name  => login,
-                       :password   => password,
-                       :enable_ssl => true 
-    end
+      Mail.defaults do
+        delivery_method :smtp, { :address              => "smtp.gmail.com",
+                                :port                 => 587,
+                                :domain               => 'gmail.com',
+                                :user_name            => login,
+                                :password             => password,
+                                :authentication       => 'plain',
+                                :enable_starttls_auto => true }  
+        retriever_method :imap, 
+                        :address    => 'imap.gmail.com',
+                        :port       => 993,
+                        :user_name  => login,
+                        :password   => password,
+                        :enable_ssl => true 
+      end
   end
 
   def send_email(from,to,cc,subject,body)
@@ -49,13 +49,19 @@ module TestHelper
 
   protected
 
-  def find_email(options)
-    mail = Mail.last
-    result = true
-    options.each_pair do |k,v|
-      result = false if !v.blank? && v != mail.send(k)
+  def find_email(options)    
+    mails = Mail.find(:what => :last, :count => 3, :order => :asc)    
+    mail  = nil
+
+    mails.each do |m|
+      result = true
+      options.each_pair do |k,v|
+        result = false if !v.blank? && v != m.send(k)
+      end
+      mail = m and break if result
     end
-    result ? mail : false
+
+    mail || false
   end
 
 end
