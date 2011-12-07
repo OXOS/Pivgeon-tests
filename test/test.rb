@@ -19,67 +19,89 @@ describe 'A user' do
   TOKEN = ENV['TOKEN']
 
   describe "An unregistered user" do
-   	   
-    before do
-      init_mailer(EMAIL3,PASSWORD3) 
-    end
-      
-    it "is not able to crate new story" do
-      send_email(EMAIL3,EMAIL3,"#{PROJECT_NAME}@pivgeon.com","Unregistered user creates new story 1","Body")
-      wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL3], :subject => "Re: Unregistered user creates new story 1" ) do |body_text|
-        assert body_text =~ /You tried to create new story. Unfortunatelly the story hasn't been created due to following errors/
-        assert body_text =~ /Unauthorized access/
-      end
-    end
 
-    it "creates new Pivgeon account" do
-      email = "pivgeon_test_user_#{Time.now.hash}#{rand 10000}@example.com"
-
-      visit "http://pivgeon.com/users/new"
-
-      fill_in "Email", :with => email
-      fill_in "Pivotal token", :with => TOKEN
-      click_button "Create"
-
-      assert has_content?("Congratulations, your account has been created.")
-    end
-
-    describe "can't create new pivgeon account" do
+    describe "is able to" do
 
       before do
+        init_mailer(EMAIL1,PASSWORD1)
+      end
+
+      it "create new Pivgeon account" do
+        email = EMAIL1.split('@')
+        email = "#{email[0]}+pivgeon_#{Time.now.hash}#{rand 10000}@#{email[1]}"
+
         visit "http://pivgeon.com/users/new"
-      end
 
-      it "due to mising data" do        
-        fill_in "Email", :with => ""
-        fill_in "Pivotal token", :with => ""
-        
-        click_button "Create"
-
-        assert has_css?("div.formError", :text => "Email can't be blank")
-        assert has_css?("div.formError", :text => "Token can't be blank")
-      end
-
-      it "due to taken email" do
-        fill_in "Email", :with => EMAIL1
+        fill_in "Email", :with => email
         fill_in "Pivotal token", :with => TOKEN
-
         click_button "Create"
 
-        assert has_css?("div.formError", :text => "Email address is already taken")
-      end
+        assert has_content?("Your account has been created. We require you to activate your account by email, just click the link we have sent you.")
 
-      it "due to invalid token" do
-        fill_in "Email", :with => "someemail@example.com"
-        fill_in "Pivotal token", :with => "invalidtoken"
+        activation_url = ""
+        wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [email], :subject => "Pivgeon - new account activation." ) do |body_text|
+          activation_url = body_text.match(/<a.*>(http:\/\/.*)<\/a>$/)[1]
+          assert body_text =~ /In order complete the registration process use link <a.*\/a>/
+        end
 
-        click_button "Create"
-
-        assert has_css?("div.formError", :text => "Token is invalid")
+        visit activation_url
+        assert has_content?("Your account has been activated")
       end
 
     end
-      
+
+    describe "is not able to" do
+
+      before do
+        init_mailer(EMAIL3,PASSWORD3)
+      end
+
+      it "crate new story" do
+        send_email(EMAIL3,EMAIL3,"#{PROJECT_NAME}@pivgeon.com","Unregistered user creates new story 1","Body")
+        wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL3], :subject => "Re: Unregistered user creates new story 1" ) do |body_text|
+          assert body_text =~ /You tried to create new story. Unfortunatelly the story hasn't been created due to following errors/
+          assert body_text =~ /Unauthorized access/
+        end
+      end
+
+      describe "create new pivgeon account" do
+
+        before do
+          visit "http://pivgeon.com/users/new"
+        end
+
+        it "due to mising data" do
+          fill_in "Email", :with => ""
+          fill_in "Pivotal token", :with => ""
+
+          click_button "Create"
+
+          assert has_css?("div.formError", :text => "Email can't be blank")
+          assert has_css?("div.formError", :text => "Token can't be blank")
+        end
+
+        it "due to taken email" do
+          fill_in "Email", :with => EMAIL1
+          fill_in "Pivotal token", :with => TOKEN
+
+          click_button "Create"
+
+          assert has_css?("div.formError", :text => "Email address is already taken")
+        end
+
+        it "due to invalid token" do
+          fill_in "Email", :with => "someemail@example.com"
+          fill_in "Pivotal token", :with => "invalidtoken"
+
+          click_button "Create"
+
+          assert has_css?("div.formError", :text => "Token is invalid")
+        end
+
+      end
+
+    end
+           
   end
 
   describe "A registered user" do
