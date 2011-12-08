@@ -2,6 +2,7 @@
 
 - Ruby 1.9.2
 - gem Mail
+- gem Capybara
 
 **How to use:**
 
