@@ -36,7 +36,7 @@ describe 'A user' do
         fill_in "Pivotal token", :with => TOKEN
         click_button "Create"
 
-        assert has_content?("Your account has been created. We require you to activate your account by email, just click the link we have sent you.")
+        assert has_content?("Thank you! Please confirm your email by clicking the link we've just sent you.")
 
         activation_url = ""
         wait_for_email( :from => ["pivgeon@devel.pivgeon.com"], :to => [email], :subject => "Pivgeon - new account activation." ) do |body_text|
