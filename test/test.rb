@@ -148,6 +148,13 @@ describe 'A user' do
       end
     end
 
+    it "creates new story with labels" do
+      send_email(EMAIL1,EMAIL1,"#{PROJECT_NAME}@devel.pivgeon.com","[foo][bar] Add new story with labels","Some more detailed explanation")
+      wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: [foo][bar] Add new story with labels") do |body_text|
+        assert body_text =~ /You have created new story 'Add new story with labels'/
+      end
+    end
+
 
     describe "is not able to create new story" do
 
