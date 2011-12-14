@@ -101,7 +101,7 @@ describe 'A user' do
       end
 
     end
-           
+
   end
 
   describe "A registered user" do
@@ -129,6 +129,21 @@ describe 'A user' do
       send_email(EMAIL1,EMAIL1,"#{project_name}@devel.pivgeon.com","Fix the bug","Some more detailed explanation")
       wait_for_email(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Fix the bug") do |body_text|
         assert body_text =~ /You have created new story 'Fix the bug'/
+      end
+    end
+
+    it "creates new bug" do
+      send_email(EMAIL1,EMAIL1,"#{PROJECT_NAME}@devel.pivgeon.com","Add new bug","Some more detailed explanation")
+      wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add new bug") do |body_text|
+        assert body_text =~ /You have created new story 'Add new bug'/
+      end
+    end
+
+    it "creates new story with attachment" do
+      attachment_path = File.expand_path(File.dirname(__FILE__)) + "/files/attachment.txt"
+      send_email(EMAIL1,EMAIL1,"#{PROJECT_NAME}@devel.pivgeon.com","Add new story with attachment","Some more detailed explanation",:attachment=>attachment_path)
+      wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add new story with attachment") do |body_text|
+        assert body_text =~ /You have created new story 'Add new story with attachment'/
       end
     end
 

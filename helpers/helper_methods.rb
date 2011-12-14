@@ -17,13 +17,14 @@ module TestHelper
       end
   end
 
-  def send_email(from,to,cc,subject,body)
+  def send_email(from,to,cc,subject,body,options={})
     mail = Mail.new do          
       to 	to
       from    from
       cc 	cc
       subject subject
-      body 	body  
+      body 	body
+      add_file options[:attachment] if options[:attachment]
     end   
     mail.deliver!
   end
