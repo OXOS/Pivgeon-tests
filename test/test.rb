@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__)) + "/../helpers/test_helper.rb"
+require 'securerandom'
 
 describe 'A user' do
 
@@ -147,6 +148,7 @@ describe 'A user' do
       end
     end
 
+
     describe "is not able to create new story" do
 
       it "due to not existing member" do
@@ -160,6 +162,15 @@ describe 'A user' do
         send_email(EMAIL1,EMAIL1,"ertyuasdafa@devel.pivgeon.com","Add third feature","Some more detailed explanation")
         wait_for_email(:from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add third feature") do |body_text|
           assert body_text =~ /The project that you try to create this story for does not exist/
+        end
+      end
+
+      it "when description text is too long" do
+        body_content = SecureRandom.urlsafe_base64(5001)
+        send_email(EMAIL1,EMAIL1,"#{PROJECT_NAME}@devel.pivgeon.com","Add new feature with long description",body_content)
+        wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: Add new feature with long description") do |body_text|
+          assert body_text =~ /Unfortunately, we could not create the story for you. This is response we got from Pivotal Tracker:/
+          assert body_text =~ /<error>Description may not be more than 5000 characters.<\/error>/
         end
       end
 
