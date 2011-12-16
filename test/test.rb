@@ -155,6 +155,13 @@ describe 'A user' do
       end
     end
 
+		it "creates new story by forwarding an email to the user" do
+      send_email(EMAIL1,EMAIL1,"#{PROJECT_NAME}@devel.pivgeon.com","FWD: New story from forwarded email","Some more detailed explanation")
+      wait_for_email( :from => ["pivgeon@pivgeon.com"], :to => [EMAIL1], :subject => "Re: FWD: New story from forwarded email") do |body_text|
+        assert body_text =~ /You have created new story 'New story from forwarded email'/
+      end
+    end
+
 
     describe "is not able to create new story" do
 
